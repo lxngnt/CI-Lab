@@ -66,6 +66,7 @@ static token_t check_reserved_ids(char *s) {
 //Self note: Do this first
 static node_t *build_leaf(void) {
     //Make empty node
+    //memory leaks detected
     nptr_t newNode = (node_t*) calloc(1, sizeof(node_t));
     if (! newNode) {
         // calloc returns NULL if memory allocation fails
@@ -96,6 +97,10 @@ static node_t *build_leaf(void) {
         //malloc a string and set the sval pointer to it in the node
         newNode->val.sval = calloc(1, sizeof(this_token->repr));
         strcpy(this_token->repr, newNode->val.sval);
+    }
+    else if(this_token->ttype == TOK_FMT_SPEC) {
+        newNode->type = FMT_TYPE;
+        newNode->val.fval = this_token->repr[0];
     }
     
     //Allocates memory to array of pointers to children?
