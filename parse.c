@@ -73,15 +73,12 @@ static node_t *build_leaf(void) {
         return NULL;
     }
 
-    //Set represented input token using the given lexeme
+    //Set represented input token using the given lexeme, (INT, BOOL, STRING)
     newNode->tok = this_token->ttype;
-
-    //Internal, leaf, root (TODO)
+    //Internal, leaf, root
     newNode->node_type = NT_LEAF;
 
-    //Find the type, need to set the actual value (TODO)
-
-    //Find the EEL type based on the lexeme (TODO)
+    //Find the EEL type and set the value
     if(this_token->ttype == TOK_NUM) { 
         newNode->type = INT_TYPE;
         newNode->val.ival = atoi(this_token->repr); //Convert char array to int
@@ -94,8 +91,11 @@ static node_t *build_leaf(void) {
         newNode->type = BOOL_TYPE;
         newNode->val.bval = false;
     }
-    if(this_token->ttype == TOK_STR) {
+    else if(this_token->ttype == TOK_STR) {
         newNode->type = STRING_TYPE;
+        //malloc a string and set the sval pointer to it in the node
+        newNode->val.sval = calloc(1, sizeof(this_token->repr));
+        strcpy(this_token->repr, newNode->val.sval);
     }
     
     //Allocates memory to array of pointers to children?
@@ -129,6 +129,7 @@ static node_t *build_exp(void) {
         return build_leaf();
     } else {
         // (STUDENT TODO) implement the logic for internal nodes
+        //Make new node, set type to internal
             node_t *intNode = (node_t*) calloc(1, sizeof(node_t)); 
                 if (! intNode) {
                 // calloc returns NULL if memory allocation fails
@@ -136,8 +137,7 @@ static node_t *build_exp(void) {
                 return NULL;
                 }
             intNode->node_type = NT_INTERNAL;
-            //printf("%d\n", this_token->ttype);
-            //intNode->tok = this_token->ttype;
+            //Logic when encountering a left parenthesis
             if(this_token->ttype == TOK_LPAREN) {
                 advance_lexer();
                 //left subtree
@@ -150,12 +150,12 @@ static node_t *build_exp(void) {
             //right subtree
             intNode->children[1] = build_exp();
             advance_lexer();
+            //throw error for rparenth
             if(this_token ->ttype != TOK_RPAREN) {
                 handle_error(ERR_SYNTAX);
                 return NULL;
             }
         }
-        //throw error for rparenth
         return intNode;
     }
 } 
@@ -265,4 +265,5 @@ void cleanup(node_t *nptr) {
     // Is it enough to free the node the function called upon?
     free(nptr);
     return;
+    //reminder: if the node is a string, need to free the char array
 }

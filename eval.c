@@ -29,11 +29,12 @@ static void infer_type(node_t *nptr) {
     if(nptr->node_type == NT_LEAF) {
         return;
     }
+
     //infer the left
     infer_type(nptr->children[0]);
     //infer the right
     infer_type(nptr->children[1]);
-    //if both compatible, infer this node
+    //if both compatible, set the value of this node to their value
     if(nptr->children[0]->type == nptr->children[1]->type) {
         nptr->type = nptr->children[0]->type;
     }
@@ -87,15 +88,39 @@ static void eval_node(node_t *nptr) {
     if(nptr->node_type == NT_LEAF) {
         return;
     }
-    //infer the left
+    //eval the left
     eval_node(nptr->children[0]);
-    //infer the right
+    //eval the right
     eval_node(nptr->children[1]);
-    //if both compatible, infer this node
+    //if both compatible, eval this node
     switch(nptr->tok) {
         case(TOK_PLUS):
         nptr->val.ival = nptr->children[0]->val.ival + nptr->children[1]->val.ival; //might break
         break;
+
+        case(TOK_BMINUS):
+        nptr->val.ival = nptr->children[0]->val.ival - nptr->children[1]->val.ival; 
+        break;
+
+        case(TOK_TIMES):
+        nptr->val.ival = nptr->children[0]->val.ival * nptr->children[1]->val.ival; 
+        break;
+
+        case(TOK_DIV): //int division
+        nptr->val.ival = nptr->children[0]->val.ival / nptr->children[1]->val.ival; 
+        break;
+
+        case(TOK_MOD):
+        nptr->val.ival = nptr->children[0]->val.ival % nptr->children[1]->val.ival; 
+        break;
+
+        case(TOK_STR):
+        //prone to memory errors probably
+        nptr->val.sval = calloc(1, sizeof(this_token->repr));
+        strcpy(nptr->val.sval, nptr->children[0]->val.sval);
+        strcat(nptr->val.sval, nptr->children[1]->val.sval);
+        break;
+
         
         default:
         break;
