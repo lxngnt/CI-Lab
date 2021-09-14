@@ -29,6 +29,12 @@ static void infer_type(node_t *nptr) {
     if(nptr->node_type == NT_LEAF) {
         return;
     }
+    if(nptr->tok == TOK_UMINUS || nptr->tok == TOK_NOT) { //need to infer the child node, throw an error if not compatible
+        return;
+    }
+    if(nptr->tok == TOK_STR) {
+        return;
+    }
 
     //infer the left
     infer_type(nptr->children[0]);
@@ -38,12 +44,15 @@ static void infer_type(node_t *nptr) {
     if(nptr->children[0]->type == nptr->children[1]->type) {
         nptr->type = nptr->children[0]->type;
     }
-    else {
-        handle_error(ERR_SYNTAX);
+    //singular case for string * number, try to generalize
+    else if (nptr->children[0]->type == STRING_TYPE && nptr->children[1]->type == INT_TYPE) {
+        nptr->type = nptr->children[0]->type;
     }
-    //if not, throw an error
     
-    //infer_type(nptr); //infer the type
+    else {
+        handle_error(ERR_TYPE);
+    }
+
 }
 
 
@@ -57,7 +66,6 @@ static void infer_root(node_t *nptr) {
     if (nptr == NULL) return;
     // check running status
     if (terminate || ignore_input) return;
-
     // check for assignment
     if (nptr->type == ID_TYPE) {
         infer_type(nptr->children[1]);
@@ -88,6 +96,7 @@ static void eval_node(node_t *nptr) {
     if(nptr->node_type == NT_LEAF) {
         return;
     }
+
     //eval the left
     eval_node(nptr->children[0]);
     //eval the right
@@ -95,7 +104,18 @@ static void eval_node(node_t *nptr) {
     //if both compatible, eval this node
     switch(nptr->tok) {
         case(TOK_PLUS):
-        nptr->val.ival = nptr->children[0]->val.ival + nptr->children[1]->val.ival; //might break
+        //TODO
+        if(nptr->children[0]->type != nptr->children[1]->type) {
+            handle_error(ERR_TYPE);
+        }
+        if(nptr->type == INT_TYPE) {
+            nptr->val.ival = nptr->children[0]->val.ival + nptr->children[1]->val.ival; 
+        }
+        if(nptr->type == STRING_TYPE) { //EDGE CASE: string length overflow
+            nptr->val.sval = calloc(1, strlen(nptr->children[0]->val.sval) + strlen(nptr->children[1]->val.sval));
+            strcat(nptr->children[0]->val.sval, nptr->children[1]->val.sval); 
+            strcpy(nptr->val.sval, nptr->children[0]->val.sval);
+        }
         break;
 
         case(TOK_BMINUS):
@@ -103,23 +123,99 @@ static void eval_node(node_t *nptr) {
         break;
 
         case(TOK_TIMES):
-        nptr->val.ival = nptr->children[0]->val.ival * nptr->children[1]->val.ival; 
+        if(nptr->type == INT_TYPE) {
+            nptr->val.ival = nptr->children[0]->val.ival * nptr->children[1]->val.ival; 
+        }
+        if(nptr->type == STRING_TYPE) { //EDGE CASE: string and number are switched positions
+            nptr->val.sval = calloc(1, strlen(nptr->children[0]->val.sval) * nptr->children[1]->val.ival);
+            for(int i = 0; i < nptr->children[1]->val.ival; i++) {
+                strcat(nptr->val.sval, nptr->children[0]->val.sval); 
+            }
+        }
         break;
 
-        case(TOK_DIV): //int division
-        nptr->val.ival = nptr->children[0]->val.ival / nptr->children[1]->val.ival; 
+        case(TOK_DIV): //int division, division by zero fails
+        if(nptr->children[1]->val.ival == 0) {
+            handle_error(ERR_EVAL);
+        }
+        else {
+            nptr->val.ival = nptr->children[0]->val.ival / nptr->children[1]->val.ival; 
+        }
         break;
 
         case(TOK_MOD):
-        nptr->val.ival = nptr->children[0]->val.ival % nptr->children[1]->val.ival; 
+               if(nptr->children[1]->val.ival == 0) {
+            handle_error(ERR_EVAL);
+        }
+        else {
+            nptr->val.ival = nptr->children[0]->val.ival % nptr->children[1]->val.ival; 
+        }
         break;
 
-        case(TOK_STR):
+        case(TOK_STR): //handle cases: adding strings, multiplying strings by int, negating string, 
         //prone to memory errors probably
         nptr->val.sval = calloc(1, sizeof(this_token->repr));
         strcpy(nptr->val.sval, nptr->children[0]->val.sval);
-        strcat(nptr->val.sval, nptr->children[1]->val.sval);
+        //strcat(nptr->val.sval, nptr->children[1]->val.sva l);
         break;
+
+        case(TOK_AND):
+        if(nptr->children[0]->type != nptr->children[1]->type) {
+            handle_error(ERR_TYPE);
+        }
+        nptr->val.bval = nptr->children[0]->val.bval & nptr->children[1]->val.bval;
+        break;
+
+        case(TOK_OR):
+        nptr->val.bval = nptr->children[0]->val.bval | nptr->children[1]->val.bval;
+        break;
+
+        //TODO: LT and GT type inference hard-coded, else portions may not be necessary either
+        case(TOK_LT):
+        if(nptr->children[0]->type != INT_TYPE || nptr->children[1]->type != INT_TYPE) {
+            handle_error(ERR_TYPE);
+        }
+        else {
+            nptr->val.bval = nptr->children[0]->val.bval < nptr->children[1]->val.bval;
+        }
+        break;
+
+        case(TOK_GT):
+        if(nptr->children[0]->type != INT_TYPE || nptr->children[1]->type != INT_TYPE) {
+            handle_error(ERR_TYPE);
+        }
+        else {
+            nptr->val.bval = nptr->children[0]->val.bval > nptr->children[1]->val.bval;
+        }
+        break;
+
+        case(TOK_EQ):
+                if(nptr->children[0]->type != INT_TYPE) {
+            handle_error(ERR_TYPE);
+        }
+        nptr->val.bval = nptr->children[0]->val.bval = nptr->children[1]->val.bval;
+        break;
+
+        case(TOK_UMINUS):
+        if(nptr->children[0]->type != INT_TYPE) {
+            handle_error(ERR_TYPE);
+        }
+        else {
+            nptr->val.ival = nptr->children[0]->val.ival * -1;
+        }
+        break;
+
+
+        //bitwise & boolean op
+        case(TOK_NOT):
+        if(nptr->children[0]->type == BOOL_TYPE) {
+            nptr->val.bval = !nptr->children[0]->val.bval;
+        }
+        else {
+            handle_error(ERR_TYPE);
+        }
+        break;
+
 
         
         default:

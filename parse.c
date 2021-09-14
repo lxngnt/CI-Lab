@@ -79,28 +79,50 @@ static node_t *build_leaf(void) {
     //Internal, leaf, root
     newNode->node_type = NT_LEAF;
 
-    //Find the EEL type and set the value
-    if(this_token->ttype == TOK_NUM) { 
+    //set value based on EEL type
+    switch(this_token->ttype) {
+        case(TOK_NUM):
         newNode->type = INT_TYPE;
         newNode->val.ival = atoi(this_token->repr); //Convert char array to int
-    }
-    else if(this_token->ttype == TOK_TRUE) {
+        break;
+
+        case(TOK_TRUE):
         newNode->type = BOOL_TYPE;
         newNode->val.bval = true;
-    }
-    else if(this_token->ttype == TOK_FALSE) {
+        break;
+
+        case(TOK_FALSE):
         newNode->type = BOOL_TYPE;
         newNode->val.bval = false;
-    }
-    else if(this_token->ttype == TOK_STR) {
+        break;
+
+        //needs work
+        case(TOK_STR):
         newNode->type = STRING_TYPE;
         //malloc a string and set the sval pointer to it in the node
         newNode->val.sval = calloc(1, sizeof(this_token->repr));
-        strcpy(this_token->repr, newNode->val.sval);
-    }
-    else if(this_token->ttype == TOK_FMT_SPEC) {
+        //printf("leaf string: %s \n", this_token->repr);
+        strcpy(newNode->val.sval, this_token->repr);
+        break;
+
+        case(TOK_FMT_SPEC):
         newNode->type = FMT_TYPE;
         newNode->val.fval = this_token->repr[0];
+        break;
+
+        /*
+        case(TOK_AND):
+        newNode->type = NO_TYPE;
+        break;
+
+        case(TOK_OR):
+        newNode->type = NO_TYPE;
+        break;
+        */
+
+        default:
+        break;
+
     }
     
     //Allocates memory to array of pointers to children?
@@ -115,6 +137,8 @@ static node_t *build_leaf(void) {
  * Return value: pointer to an internal node
  * (STUDENT TODO) */
 //Self note: Do this second, is a recursive function
+
+//TODO: HANDLE UNARY OPERATORS
 static node_t *build_exp(void) {
     // check running status
     if (terminate || ignore_input) return NULL;
@@ -124,8 +148,10 @@ static node_t *build_exp(void) {
     // The case of a leaf node is handled for you
     if (this_token->ttype == TOK_NUM)
         return build_leaf();
-    if (this_token->ttype == TOK_STR)
+    if (this_token->ttype == TOK_STR) {
+        printf("this token: %s \n", this_token->repr);
         return build_leaf();
+    }
     // handle the reserved identifiers, namely true and false
     if (this_token->ttype == TOK_ID) {
         if ((t = check_reserved_ids(this_token->repr)) != TOK_INVALID) {
@@ -144,22 +170,42 @@ static node_t *build_exp(void) {
             intNode->node_type = NT_INTERNAL;
             //Logic when encountering a left parenthesis
             if(this_token->ttype == TOK_LPAREN) {
+                //printf("\nencountering LParenth\n");
+                //printf("this token parenth: %s\n", this_token->repr);
                 advance_lexer();
                 //left subtree
-                intNode->children[0] = build_exp();
+                //intNode->children[0] = build_exp();
                     if(is_binop(next_token->ttype)) {
+                        //printf("Encountered Binary op\n");
+                        intNode->children[0] = build_exp();
                         intNode -> tok = next_token->ttype; //set value
                         advance_lexer();
                         advance_lexer();
-                }
-            //right subtree
-            intNode->children[1] = build_exp();
-            advance_lexer();
-            //throw error for rparenth
-            if(this_token ->ttype != TOK_RPAREN) {
-                handle_error(ERR_SYNTAX);
-                return NULL;
-            }
+                        //right subtree
+                        intNode->children[1] = build_exp();
+                        advance_lexer();
+                        //check for closing parenth
+                        //printf("this token rparenth:\n");
+                        if(this_token->ttype != TOK_RPAREN) {
+                            handle_error(ERR_SYNTAX);
+                        }
+                    }
+                    else if(this_token->ttype == TOK_STR) {
+                        printf("running");
+                        intNode->children[0] = build_exp();
+                        intNode->tok = this_token->ttype;
+                        advance_lexer();
+                    }
+                    
+                    else if(is_unop(this_token->ttype)) {
+                        intNode->tok = this_token->ttype;
+                        //printf("this token unary: %s\n", this_token->repr);
+                        advance_lexer();
+                        //printf("this token literal: %s\n", this_token->repr);
+                        intNode->children[0] = build_exp();
+                        advance_lexer();
+                    }
+    
         }
         return intNode;
     }
@@ -216,6 +262,7 @@ static node_t *build_root(void) {
         
         // check that our next token is a format specifier
         if (next_token->ttype != TOK_SEP) {
+            printf("syntax error line 250");
             handle_error(ERR_SYNTAX);
             return ret;
         }

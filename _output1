@@ -1,0 +1,13 @@
+	ans = "a"
+	ans = "abc"
+	ans = "abcde"
+	ERROR: Failed Type Inference
+	ERROR: Failed Type Inference
+	ans = "abcabcabcabcabc"
+	ans = "abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc"
+	ERROR: Failed Type Inference
+	ERROR: Failed Type Inference
+	ERROR: Failed Type Inference
+	ERROR: Failed Type Inference
+	ERROR: Failed Type Inference
+	ERROR: Failed Lexical Analysis
