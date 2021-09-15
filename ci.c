@@ -14,9 +14,7 @@ int main(int argc, char* argv[]) {
     init();
     while (! terminate) {
         ignore_input = false;
-        //printf("reading and parsing");
         node_t *nptr = read_and_parse();
-        //printf("inferring and eval");
         infer_and_eval(nptr);
         print_tree(nptr);
         format_and_print(nptr);
