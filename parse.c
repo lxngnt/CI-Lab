@@ -351,14 +351,6 @@ node_t *read_and_parse(void)
 void cleanup(node_t *nptr)
 {
     // Is it enough to free the node the function called upon?
-    if(nptr->children != NULL) {
-        for(int i = 0; i < 2; i++) {
-            if(nptr->children[i] != NULL) {
-                free(nptr->children[i]);
-            }
-        }
-        free(nptr->children);
-    }
     free(nptr);
     return;
     //reminder: if the node is a string, need to free the char array

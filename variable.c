@@ -112,7 +112,11 @@ entry_t * init_entry(char *id, node_t *nptr) {
  */
 
 void put(char *id, node_t *nptr) {
-    return;
+    int index = hash_function(id);
+    while(var_table->entries[index] != NULL) {
+        index++;
+    }
+    var_table->entries[index] = init_entry(id, nptr);
 }
 
 /* get() - search for an entry in the hashtable.
