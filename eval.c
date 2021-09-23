@@ -205,14 +205,24 @@ static void eval_node(node_t *nptr) {
     }
     */
     //eval the left
+    if(nptr->tok == TOK_QUESTION) {
+        eval_node(nptr->children[0]);
+        if(nptr->children[0]->val.bval == true) {
+            eval_node(nptr->children[1]);
+        }
+        else {
+            eval_node(nptr->children[2]);
+        }
+    }
+    else {
     eval_node(nptr->children[0]);
     //eval the right
     eval_node(nptr->children[1]);
     if(nptr->children[2] != NULL) {
         eval_node(nptr->children[2]);
+       }
     }
     //if both compatible, eval this node
-    printf("evalling %d", nptr->tok);
     switch(nptr->tok) {
 
         //ADDITION
@@ -279,10 +289,6 @@ static void eval_node(node_t *nptr) {
         if(nptr->children[0]->type != BOOL_TYPE && (nptr->children[1]->type != BOOL_TYPE)) {
             handle_error(ERR_TYPE);
         }
-        if(nptr->children[0]->val.ival != 0 || (nptr->children[1]->val.ival != 0)) {
-            handle_error(ERR_TYPE);
-        }
-        printf("fuck");
         nptr->val.bval = nptr->children[0]->val.bval & nptr->children[1]->val.bval;
         break;
 
