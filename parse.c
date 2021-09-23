@@ -115,10 +115,16 @@ static node_t *build_leaf(void)
         newNode->type = FMT_TYPE;
         newNode->val.fval = this_token->repr[0];
         break;
+    
+    case(TOK_ID):
+        newNode->type = ID_TYPE;
+        newNode->val.sval = calloc(1, sizeof(this_token->repr));
+        strcpy(newNode->val.sval, this_token->repr);
+        break;
     default:
         break;
     }
-
+    printf("building leaf");
     return newNode;
 }
 
@@ -145,6 +151,9 @@ static node_t *build_exp(void)
     {
         //printf("this token: %s \n", this_token->repr);
         return build_leaf();
+    }
+    if(this_token->ttype == TOK_UMINUS && (next_token->ttype != TOK_LPAREN || next_token->ttype != TOK_NUM)) {
+        handle_error(ERR_SYNTAX);
     }
     // handle the reserved identifiers, namely true and false
     if (this_token->ttype == TOK_ID)
@@ -205,6 +214,7 @@ static node_t *build_exp(void)
                 intNode->tok = TOK_ID;
                 advance_lexer();
             }
+
             else {
                 if(intNode->children[0] == NULL) {
                     intNode->children[0] = build_exp();

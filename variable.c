@@ -71,7 +71,7 @@ unsigned long hash_function(char *s) {
  * Return value: An allocated entry. */
 entry_t * init_entry(char *id, node_t *nptr) {
     if (nptr == NULL) {
-        logging(LOG_FATAL, "failed to allocate entry");
+        logging(LOG_FATAL, "failed to allocate entry 1");
         return NULL;
     }
     entry_t *eptr = (entry_t *) calloc(1, sizeof(entry_t));
@@ -111,6 +111,7 @@ entry_t * init_entry(char *id, node_t *nptr) {
  * (STUDENT TODO) 
  */
 
+//need to update if already exists
 void put(char *id, node_t *nptr) {
     //get the index to put the entry
     int index = hash_function(id);
@@ -140,7 +141,25 @@ void put(char *id, node_t *nptr) {
  * (STUDENT TODO) 
  */
 entry_t* get(char* id) {
-    return NULL;
+   entry_t* search = NULL;
+   for (int index = 0; index < CAPACITY; ++index) {
+       //if it's null, skip it
+        if(var_table->entries[index] != NULL) {
+            //check for match in first one
+            if(strcmp(var_table->entries[index]->id, id) == 0) {
+                search = var_table->entries[index];
+            }
+            //check for match in collisions
+            entry_t* entryptr = var_table->entries[index]->next; //pointer is either to another node, or NULL
+            while(entryptr != NULL) {
+                if(strcmp(var_table->entries[index]->id, id) == 0) {
+                    search = var_table->entries[index];
+                }
+                entryptr = var_table->entries[index]->next;
+            }
+        }
+    }
+    return search;
 }
 
 void print_entry(entry_t *eptr) {
