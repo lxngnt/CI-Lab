@@ -29,11 +29,7 @@ static void infer_type(node_t *nptr) {
     if(nptr->node_type == NT_LEAF) {
         return;
     }
-    /*
-    if(nptr->tok == TOK_UMINUS || nptr->tok == TOK_NOT) { //need to infer the child node, throw an error if not compatible
-        return;
-    }
-    */
+
     if(nptr->tok == TOK_ID) {
         //nptr->type = nptr->children[0]->type;
         nptr->tok = TOK_IDENTITY;
@@ -42,7 +38,7 @@ static void infer_type(node_t *nptr) {
     }
     if(nptr->tok == TOK_NOT) {
         nptr->type = BOOL_TYPE;
-        printf("setting");
+        infer_type(nptr->children[0]);
         return;
     }
     //infer the left
@@ -145,6 +141,7 @@ static void infer_type(node_t *nptr) {
             nptr->type = nptr->children[0]->type;
         }
         else {
+            printf("error2");
             handle_error(ERR_TYPE);
         }
         break;
@@ -355,7 +352,6 @@ static void eval_node(node_t *nptr) {
             nptr->val.bval = !nptr->children[0]->val.bval;
         }
         else {
-            printf("error");
             handle_error(ERR_TYPE);
         }
         break;

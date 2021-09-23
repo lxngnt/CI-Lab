@@ -170,26 +170,19 @@ static node_t *build_exp(void)
         if (this_token->ttype == TOK_LPAREN)
         {
             advance_lexer();
-            //The next character is either a Unary or redundant parenthesis
-            /*
-            if(this_token->ttype == TOK_LPAREN) {
-                intNode->tok = TOK_ID;
-                intNode->children[0] =  build_exp();
-                advance_lexer();
-            }
-            */
+            //The next character is either a Unary or literal
             if (is_unop(this_token->ttype))
             {
                 intNode->tok = this_token->ttype;
                 advance_lexer();
-                //now either a literal or a left parenthesis
                 intNode->children[0] = build_exp();
                 advance_lexer();
             } else {
-            //It's not a unary, so it's either a binary, ternary, or redundant
-            intNode->children[0] = build_exp();
+            //if it's a literal, there are a couple of cases. it can be either binary, ternary, or redundant
+            //intNode->children[0] = build_exp();
             if (is_binop(next_token->ttype))
             {
+                intNode->children[0] = build_exp();
                 intNode->tok = next_token->ttype; //set value
                 advance_lexer();
                 advance_lexer();
@@ -201,15 +194,25 @@ static node_t *build_exp(void)
                 {
                     handle_error(ERR_SYNTAX);
                 }
-            
             } 
-                else if(next_token->ttype == TOK_RPAREN) {
+            else if(this_token->ttype == TOK_LPAREN) {
+                intNode->children[0] = build_exp();
+                advance_lexer();
+            }
+            //if it's a literal and it's next to a RParenth, it is redundant
+            else if(next_token->ttype == TOK_RPAREN) {
+                printf("Setting ID");
                 intNode->tok = TOK_ID;
                 advance_lexer();
             }
             else {
+                if(intNode->children[0] == NULL) {
+                    intNode->children[0] = build_exp();
+                }
                 //for ternary
+                printf("setting tok");
                 intNode->tok = next_token->ttype;
+                printf("%d", next_token->ttype);
                 advance_lexer();
                 advance_lexer();
                 if(next_token->ttype != TOK_COLON) {

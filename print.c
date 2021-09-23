@@ -188,6 +188,7 @@ void print_tree_helper(node_t* node, int level) {
                 break;
             case TOK_NOT:
                 printf("!");
+                printf("%d",node->type);
                 break;
             case TOK_ASSIGN:
                 printf("=");
