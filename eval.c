@@ -41,6 +41,8 @@ static void infer_type(node_t *nptr) {
         return;
     }
     if(nptr->tok == TOK_NOT) {
+        nptr->type = BOOL_TYPE;
+        printf("setting");
         return;
     }
     //infer the left
@@ -273,7 +275,7 @@ static void eval_node(node_t *nptr) {
 
         //AND
         case(TOK_AND):
-        if(nptr->children[0]->type != nptr->children[1]->type) {
+        if(nptr->children[0]->type != BOOL_TYPE && (nptr->children[1]->type != BOOL_TYPE)) {
             handle_error(ERR_TYPE);
         }
         nptr->val.bval = nptr->children[0]->val.bval & nptr->children[1]->val.bval;
@@ -353,6 +355,7 @@ static void eval_node(node_t *nptr) {
             nptr->val.bval = !nptr->children[0]->val.bval;
         }
         else {
+            printf("error");
             handle_error(ERR_TYPE);
         }
         break;

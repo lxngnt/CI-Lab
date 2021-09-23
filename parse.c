@@ -180,11 +180,9 @@ static node_t *build_exp(void)
             */
             if (is_unop(this_token->ttype))
             {
-                printf("token tok: %d\n", intNode->tok);
                 intNode->tok = this_token->ttype;
-                printf("token tok now: %d\n", intNode->tok);
-
                 advance_lexer();
+                //now either a literal or a left parenthesis
                 intNode->children[0] = build_exp();
                 advance_lexer();
             } else {
@@ -203,7 +201,13 @@ static node_t *build_exp(void)
                 {
                     handle_error(ERR_SYNTAX);
                 }
-            } else {
+            
+            } 
+                else if(next_token->ttype == TOK_RPAREN) {
+                intNode->tok = TOK_ID;
+                advance_lexer();
+            }
+            else {
                 //for ternary
                 intNode->tok = next_token->ttype;
                 advance_lexer();
@@ -216,27 +220,10 @@ static node_t *build_exp(void)
                 advance_lexer();
                 intNode -> children[2] = build_exp();
                 advance_lexer();
-            }
-            //If it's a string, create the string node
-            /*
-            if (this_token->ttype == TOK_STR)
-            {
-                intNode->children[0] = build_exp();
-                intNode->tok = this_token->ttype;
-                //advance_lexer();
-                ///check for closing
-                
-                if(this_token->ttype != TOK_STR) {
-                    handle_error(ERR_SYNTAX);
                 }
-                
-            }
-            */
             }
             
         }
-        printf("token tok end: %d\n", intNode->tok);
-
         return intNode;
     }
 }
