@@ -112,11 +112,26 @@ entry_t * init_entry(char *id, node_t *nptr) {
  */
 
 void put(char *id, node_t *nptr) {
+    //get the index to put the entry
     int index = hash_function(id);
-    while(var_table->entries[index] != NULL) {
-        index++;
+
+    //create the entry
+    entry_t* entry = init_entry(id, nptr);
+
+    //check for collision, if there is a collision
+    if(var_table->entries[index] != NULL) {
+
+        entry_t* entryptr = var_table->entries[index]->next; //pointer is either to another node, or NULL
+        while(var_table->entries[index]->next != NULL) {
+            entryptr = var_table->entries[index]->next;
+        }
+        entryptr->next = entry; //set the next pointer to this entry
     }
-    var_table->entries[index] = init_entry(id, nptr);
+
+    //otherwise just set the entry normally
+    else {
+        var_table->entries[index] = entry;
+    }
 }
 
 /* get() - search for an entry in the hashtable.

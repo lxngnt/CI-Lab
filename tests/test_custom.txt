@@ -1,13 +1,2 @@
-"a"
-"abc"
-("abc" + "de")
-(_"abc")
-(_"a")
-("abc" * 5)
-("abc" * 50)
-("abc" ~ "abd") # b
-("abc" ~ "abc") # b
-("abcd" > "abc") # b
-("eee" < "eed") # b
-(5 * "abc")
+(_(5))
 @q

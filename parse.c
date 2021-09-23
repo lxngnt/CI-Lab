@@ -167,21 +167,21 @@ static node_t *build_exp(void)
             return NULL;
         }
         intNode->node_type = NT_INTERNAL;
-        //Logic when encountering a left parenthesis = build new expression
-
-        //random
-        /*
-        if(intNode == NULL || intNode->node_type == NT_LEAF) {
-            return NULL;
-        }
-        */
         if (this_token->ttype == TOK_LPAREN)
         {
             advance_lexer();
-            //The next character is either a Unary or Literal
-            if (is_unop(this_token->ttype))
+            //The next character is either a Unary or redundant parenthesis
+            if(this_token->ttype == TOK_LPAREN) {
+                intNode->tok = TOK_ID;
+                intNode->children[0] =  build_exp();
+                advance_lexer();
+            }
+            else if (is_unop(this_token->ttype))
             {
+                printf("token tok: %d\n", intNode->tok);
                 intNode->tok = this_token->ttype;
+                printf("token tok now: %d\n", intNode->tok);
+
                 advance_lexer();
                 intNode->children[0] = build_exp();
                 advance_lexer();
@@ -203,7 +203,7 @@ static node_t *build_exp(void)
                 }
             } else {
                 //for ternary
-                intNode ->tok = next_token->ttype;
+                intNode->tok = next_token->ttype;
                 advance_lexer();
                 advance_lexer();
                 if(next_token->ttype != TOK_COLON) {
@@ -231,6 +231,8 @@ static node_t *build_exp(void)
             }
             
         }
+        printf("token tok end: %d\n", intNode->tok);
+
         return intNode;
     }
 }

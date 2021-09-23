@@ -34,6 +34,12 @@ static void infer_type(node_t *nptr) {
         return;
     }
     */
+    if(nptr->tok == TOK_ID) {
+        //nptr->type = nptr->children[0]->type;
+        nptr->tok = TOK_IDENTITY;
+        infer_type(nptr->children[0]);
+        return;
+    }
     if(nptr->tok == TOK_NOT) {
         return;
     }
@@ -124,6 +130,12 @@ static void infer_type(node_t *nptr) {
             handle_error(ERR_TYPE);
         }
         break;
+
+        case(TOK_AND):
+        if(nptr->children[0]->type != BOOL_TYPE && (nptr->children[1]->type != BOOL_TYPE)) {
+            handle_error(ERR_TYPE);
+        }
+        break;
         
 
         default:
@@ -185,12 +197,20 @@ static void eval_node(node_t *nptr) {
     if(nptr->node_type == NT_LEAF) {
         return;
     }
+    /*
+    if(nptr->tok == TOK_IDENTITY) {
+        printf("evalling node\n");
 
+        eval_node(nptr->children[0]);
+        return;
+    }
+    */
     //eval the left
     eval_node(nptr->children[0]);
     //eval the right
     eval_node(nptr->children[1]);
     //if both compatible, eval this node
+    printf("evalling %d", nptr->tok);
     switch(nptr->tok) {
 
         //ADDITION
@@ -334,6 +354,12 @@ static void eval_node(node_t *nptr) {
         }
         else {
             handle_error(ERR_TYPE);
+        }
+        break;
+
+        case(TOK_IDENTITY):
+        if(nptr->children[0]->type == INT_TYPE) {
+            nptr->val.ival = nptr->children[0]->val.ival;
         }
         break;
 
