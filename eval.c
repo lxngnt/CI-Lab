@@ -208,6 +208,9 @@ static void eval_node(node_t *nptr) {
     eval_node(nptr->children[0]);
     //eval the right
     eval_node(nptr->children[1]);
+    if(nptr->children[2] != NULL) {
+        eval_node(nptr->children[2]);
+    }
     //if both compatible, eval this node
     printf("evalling %d", nptr->tok);
     switch(nptr->tok) {
@@ -254,10 +257,11 @@ static void eval_node(node_t *nptr) {
 
         //MODULUS
         case(TOK_MOD):
-               if(nptr->children[1]->val.ival == 0) {
+        if(nptr->children[1]->val.ival == 0) {
             handle_error(ERR_EVAL);
         }
         else {
+            printf("MODDING");
             nptr->val.ival = nptr->children[0]->val.ival % nptr->children[1]->val.ival; 
         }
         break;
