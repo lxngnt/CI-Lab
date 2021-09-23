@@ -179,10 +179,10 @@ static node_t *build_exp(void)
                 advance_lexer();
             } else {
             //if it's a literal, there are a couple of cases. it can be either binary, ternary, or redundant
-            //intNode->children[0] = build_exp();
+            intNode->children[0] = build_exp();
             if (is_binop(next_token->ttype))
             {
-                intNode->children[0] = build_exp();
+                //intNode->children[0] = build_exp();
                 intNode->tok = next_token->ttype; //set value
                 advance_lexer();
                 advance_lexer();
