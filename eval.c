@@ -279,6 +279,10 @@ static void eval_node(node_t *nptr) {
         if(nptr->children[0]->type != BOOL_TYPE && (nptr->children[1]->type != BOOL_TYPE)) {
             handle_error(ERR_TYPE);
         }
+        if(nptr->children[0]->val.ival != 0 || (nptr->children[1]->val.ival != 0)) {
+            handle_error(ERR_TYPE);
+        }
+        printf("fuck");
         nptr->val.bval = nptr->children[0]->val.bval & nptr->children[1]->val.bval;
         break;
 
