@@ -216,18 +216,22 @@ static node_t *build_exp(void)
             }
 
             else {
+                /*
                 if(intNode->children[0] == NULL) {
                     intNode->children[0] = build_exp();
                 }
+                */
                 //for ternary
                 printf("setting tok");
                 intNode->tok = next_token->ttype;
                 printf("%d", next_token->ttype);
                 advance_lexer();
                 advance_lexer();
+                /*
                 if(next_token->ttype != TOK_COLON) {
                     handle_error(ERR_SYNTAX);
                 }
+                */
                 intNode -> children[1] = build_exp();
                 advance_lexer();
                 advance_lexer();
