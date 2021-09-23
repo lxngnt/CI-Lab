@@ -171,12 +171,14 @@ static node_t *build_exp(void)
         {
             advance_lexer();
             //The next character is either a Unary or redundant parenthesis
+            /*
             if(this_token->ttype == TOK_LPAREN) {
                 intNode->tok = TOK_ID;
                 intNode->children[0] =  build_exp();
                 advance_lexer();
             }
-            else if (is_unop(this_token->ttype))
+            */
+            if (is_unop(this_token->ttype))
             {
                 printf("token tok: %d\n", intNode->tok);
                 intNode->tok = this_token->ttype;
@@ -186,7 +188,7 @@ static node_t *build_exp(void)
                 intNode->children[0] = build_exp();
                 advance_lexer();
             } else {
-            //It's not a unary, so it's either a binary, ternary, or string
+            //It's not a unary, so it's either a binary, ternary, or redundant
             intNode->children[0] = build_exp();
             if (is_binop(next_token->ttype))
             {
@@ -216,6 +218,7 @@ static node_t *build_exp(void)
                 advance_lexer();
             }
             //If it's a string, create the string node
+            /*
             if (this_token->ttype == TOK_STR)
             {
                 intNode->children[0] = build_exp();
@@ -228,6 +231,7 @@ static node_t *build_exp(void)
                 }
                 
             }
+            */
             }
             
         }
